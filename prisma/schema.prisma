@@ -7,4 +7,138 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  SUPER_ADMIN
+  SCHOOL_ADMIN
+  TEACHER
+  PARENT
+  STUDENT
+}
+
+model School {
+  id String @id @default(uuid())
+  name String @unique
+  address String
+
+  users User[]
+
+  schoolclasses SchoolClass[]
+}
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String? @unique
+  password String?
+  role Role @default(STUDENT)
+
+  schoolId String?
+  school School? @relation(fields: [schoolId], references: [id])
+
+  parentId String? @map("parent_id")
+  parent User? @relation("familyLink", fields: [parentId], references: [id])
+  children User[] @relation("familyLink")
+
+  classId String?
+  class SchoolClass? @relation(fields: [classId], references: [id])
+
+  mark Mark[]
+}
+
+model SchoolClass {
+  id String @id @default(uuid())
+  name String
+
+  schoolId String
+  school School @relation(fields: [schoolId], references: [id])
+
+  gradeId String
+  grade SchoolGrade @relation(fields: [gradeId], references: [id])
+
+  user User[]
+
+  classProgress ClassProgress[]
+
+}
+
+model SchoolGrade {
+  id String @id @default(uuid())
+  name String @unique
+
+  schoolclasses SchoolClass[]
+
+  academicPlan AcademicPlan[]
+}
+
+model Subject {
+  id  String @id @default(uuid())
+  name String @unique
+
+  academicplan AcademicPlan[]
+
+  mark Mark[]
+}
+
+model AcademicPlan {
+  id String @id @default(uuid())
+  trimester Int
+  year Int
+
+  subjectId String
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  gradeId String
+  schoolGrade SchoolGrade @relation(fields: [gradeId], references: [id])
+
+  topic Topic[]
+
+  @@unique([subjectId, gradeId, trimester, year])
+}
+
+model Topic {
+  id String @id @default(uuid())
+  weekNumber Int
+  unit String
+  content String
+  objectives String?
+  numberOfLessons Int @default(1)
+
+  planId String
+  academicPlan AcademicPlan @relation(fields: [planId], references: [id])
+
+  classProgress ClassProgress[]
+
+
+}
+
+model ClassProgress {
+  id String @id @default(uuid())
+
+  classId String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id])
+
+  topicId String
+  topic Topic @relation(fields: [topicId], references: [id])
+
+  completedAt DateTime @default(now())
+
+  @@unique([classId, topicId])
+}
+
+model Mark {
+  id String @id @default(uuid())
+  type String
+  value Float
+  trimester Int
+
+  studentId String
+  student User @relation(fields: [studentId], references: [id])
+
+  subjectId String
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  createAt DateTime @default(now())
+}
+
+
 
