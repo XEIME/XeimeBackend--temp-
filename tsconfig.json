@@ -2,7 +2,7 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
+    "rootDir": "./",
     "outDir": "./dist",
     "allowJs": true,
     "esModuleInterop": true,
@@ -11,7 +11,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "ESNext",
-    "target": "ES2022",
+    "target": "ES2023",
     "types": [],
     // For nodejs:
     // "lib": ["esnext"],
