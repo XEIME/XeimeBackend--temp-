@@ -11,7 +11,7 @@ export const login = async (req: Request, res: Response) => {
         where: {
             OR: [
                 {email: login},
-                {phone: login}
+                {phone: login},
             ]   
         }
        })
