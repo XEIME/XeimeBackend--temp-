@@ -11,6 +11,6 @@ router.get('/me', authMiddleware, (req, res) => {
     return res.json({message: "Tu estás autenticado",
         user: req.user
     })
-})
+});
 
 export default router;
