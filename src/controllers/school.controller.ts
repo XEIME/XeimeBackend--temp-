@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
+import { Role } from "../../generated/prisma/enums";
 
 export const createSchoolWithAdmin = async (req: Request, res: Response) => {
     try {
@@ -46,7 +47,7 @@ export const createSchoolWithAdmin = async (req: Request, res: Response) => {
         });
         
     }catch(error) {
-        console.error(error);
+        // console.error(error);
         return res.status(500).json({error: "Erro ao criar escolas ou o nome já existe."});
     }
 };
@@ -111,5 +112,85 @@ export const getSchoolsDetalhes = async (req: Request, res: Response) => {
     }catch(error){
         console.error(error);
         return res.status(500).json({error: "Erro ao tentar buscar detalhes da escola "})
+    }
+}
+
+ export const schoolupdate = async (req: Request, res: Response) => {
+    try{
+        if(req.user.role !== 'SUPER_ADMIN'){
+            return res.status(403).json({error: "Acesso negado."})
+        }
+
+        const {id} = req.params;
+
+         if(!id || typeof id !== 'string'){
+            return res.status(400).json({error: "ID da escola é obrigatório."})
+        }
+
+        const {
+            schoolName, 
+            schoolAdress,
+            adminName,
+            adminEmail,
+            adminPhone,
+        } = req.body
+
+        const school = await prisma.school.findUnique({
+            where: {
+                id: id
+            },
+            include: {
+                users: {
+                    where: {
+                        role: 'SCHOOL_ADMIN'
+                    },
+                    select: {
+                        id: true,
+                    }
+                }
+            }
+        })
+
+        if(!school){
+            return res.status(404).json({message: "Escola não encontrada"})
+        }
+
+        const admin = school.users[0]
+
+        if(!admin){
+            return res.status(404).json({message: "Esta escola não possui um administrador cadastrado"})
+        }
+
+        const schoolUpadate = await prisma.school.update({
+            where: {
+                id: id
+            },
+            data: {
+                name: schoolName,
+                address: schoolAdress,
+
+                users: {
+                    update: {
+                        where: {
+                            id: admin.id
+                        },
+                        data: {
+                            name: adminName,
+                            email: adminEmail,
+                            phone: adminPhone
+                        }
+                    }
+                }
+            }
+        })
+
+        return res.json({
+            message: "Dados atulizados com sucesso",
+            schoolUpadate
+        })
+        
+    }catch(error){
+        console.error(error);
+        return res.status(500).json({error: "Error ao tentar actualizar as informações"});
     }
 }
