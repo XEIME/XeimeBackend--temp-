@@ -15,7 +15,7 @@ export const login = async (req: Request, res: Response) => {
             ]   
         }
        })
-       console.log("Utilizador encontrado:", user); 
+        
         if(!user) {
             return res.status(401).json({error: "Credenciais inválidas"});
         }
