@@ -2,8 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken"
 
 interface TokenPayload {
-    id: string,
-    role: string,
+    id: string;
+    role: string;
+    schoolId: string | null;
 }
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -14,12 +15,11 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     }
 
     const  parts = authHeader.split(" ");
-
     if(parts.length !== 2){
         return res.status(401).json({error: "Erro no formato do Token"});
     }
 
-    const [, token] = parts
+    const [,token] = parts;
 
     if(!token){
         return res.status(401).json({error: "Token malformado"})
@@ -29,7 +29,11 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         const secret = process.env.JWT_SECRET as string;
         const decoded = jwt.verify(token, secret) as unknown as TokenPayload
 
-        req.user = {id: decoded.id, role: decoded.role};
+        req.user = {
+            id: decoded.id, 
+            role: decoded.role,
+            schoolId: decoded.schoolId
+        };
 
         return next();
     } catch (error) {

@@ -1,14 +1,9 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
-import { Role } from "../../generated/prisma/enums";
 
 export const createSchoolWithAdmin = async (req: Request, res: Response) => {
     try {
-        if (req.user.role !== 'SUPER_ADMIN'){
-            return res.status(403).json({error: "Acesso negado."})
-        }
-
         const {
             schoolName, 
             schoolAdress,
@@ -54,9 +49,7 @@ export const createSchoolWithAdmin = async (req: Request, res: Response) => {
 
 export const listSchools = async (req: Request, res: Response) => {
     try {
-         if (req.user.role !== 'SUPER_ADMIN'){
-            return res.status(403).json({error: "Acesso negado."})
-        }
+        
 
         const schoolList = await prisma.school.findMany({});
         
@@ -74,9 +67,7 @@ export const listSchools = async (req: Request, res: Response) => {
 
 export const getSchoolsDetalhes = async (req: Request, res: Response) => {
     try {
-        if (req.user.role !== 'SUPER_ADMIN'){
-            return res.status(403).json({error: "Acesso negado."})
-        }
+       
 
         const {id} = req.params;
 
@@ -117,9 +108,7 @@ export const getSchoolsDetalhes = async (req: Request, res: Response) => {
 
  export const schoolupdate = async (req: Request, res: Response) => {
     try{
-        if(req.user.role !== 'SUPER_ADMIN'){
-            return res.status(403).json({error: "Acesso negado."})
-        }
+        
 
         const {id} = req.params;
 
@@ -188,9 +177,11 @@ export const getSchoolsDetalhes = async (req: Request, res: Response) => {
             message: "Dados atulizados com sucesso",
             schoolUpadate
         })
-        
+
     }catch(error){
         console.error(error);
         return res.status(500).json({error: "Error ao tentar actualizar as informações"});
     }
 }
+
+// TODO: Implementar lógica de Soft Delete (campo active: boolean)
