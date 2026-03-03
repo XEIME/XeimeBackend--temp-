@@ -67,8 +67,6 @@ export const listSchools = async (req: Request, res: Response) => {
 
 export const getSchoolsDetalhes = async (req: Request, res: Response) => {
     try {
-       
-
         const {id} = req.params;
 
         if(!id || typeof id !== 'string'){
