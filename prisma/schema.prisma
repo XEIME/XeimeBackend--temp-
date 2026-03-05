@@ -35,6 +35,8 @@ model School {
 
   users User[]
 
+  schoolGrade SchoolGrade[]
+
   schoolclasses SchoolClass[]
 }
 
@@ -101,11 +103,16 @@ model SchoolClass {
 
 model SchoolGrade {
   id String @id @default(uuid())
-  name String @unique
+  name String 
+
+  schoolId String
+  school School @relation(fields: [schoolId], references: [id])
 
   schoolclasses SchoolClass[]
 
   academicPlan AcademicPlan[]
+
+  @@unique([name, schoolId])
 }
 
 model Subject {
