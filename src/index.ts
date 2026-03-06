@@ -4,6 +4,7 @@ import authRoutes from './routes/auth.routes.js'
 import schoolRoutes from './routes/school.routes.js'
 import teacherRoutes from './routes/teacher.routes.js'
 import gradeRoutes from './routes/grades.routes.js'
+import classRoutes from './routes/class.routes.js'
 
 const app = express();
 
@@ -16,6 +17,9 @@ app.use("/schools", schoolRoutes)
 app.use("/teachers", teacherRoutes)
 
 app.use("/grades", gradeRoutes)
+
+app.use("/class", classRoutes)
+
 
 
 
