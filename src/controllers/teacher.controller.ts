@@ -1,13 +1,19 @@
-import { Request, Response } from "express";
-import { prisma } from "../lib/prisma";
-import bcrypt from "bcryptjs";
-import { Role } from "../../generated/prisma/enums";
-
+import { Request, Response } from 'express';
+import { prisma } from '../lib/prisma';
+import bcrypt from 'bcryptjs';
+import { Role } from '../../generated/prisma/enums';
 
 export const createTeacher = async (req: Request, res: Response) => {
   try {
-    const { teacherName, teacherEmail, teacherPhone, teacherPassword } =
-      req.body;
+    const {
+      teacherName,
+      teacherEmail,
+      teacherPhone,
+      teacherPassword,
+      teacherClass,
+      teacherGrade,
+    } = req.body;
+
     const schoolId = req.user.schoolId;
     const role = Role.TEACHER;
 
@@ -20,8 +26,46 @@ export const createTeacher = async (req: Request, res: Response) => {
     if (existingUser) {
       return res.status(400).json({
         message:
-          "Este e-mail ou número de telefone já está em uso por outro utilizador.",
+          'Este e-mail ou número de telefone já está em uso por outro utilizador.',
       });
+    }
+
+    if (!schoolId) {
+      return res
+        .status(403)
+        .json({
+          error:
+            'Acesso negado. O seu utilizador não está vinculado a nenhuma escola.',
+        });
+    }
+
+    const classFind = await prisma.schoolClass.findFirst({
+      where: { id: teacherClass, gradeId: teacherGrade, schoolId: schoolId },
+    });
+
+    if (!classFind) {
+      return res
+        .status(400)
+        .json({
+          error:
+            'Verifique se a classe e a turma selecionadas são válidas e pertencem a esta escola.',
+        });
+    }
+
+    const isClassOccupied = await prisma.user.findFirst({
+      where: {
+        role: role,
+        classId: teacherClass,
+      },
+    });
+
+    if (isClassOccupied) {
+      return res
+        .status(409)
+        .json({
+          error:
+            'Esta turma já tem um professor regente atribuído. Remova o professor atual antes de atribuir um novo',
+        });
     }
 
     const hashedPassword = await bcrypt.hash(teacherPassword, 10);
@@ -32,6 +76,7 @@ export const createTeacher = async (req: Request, res: Response) => {
         email: teacherEmail,
         phone: teacherPhone,
         password: hashedPassword,
+        classId: teacherClass,
         schoolId,
         role,
       },
@@ -40,32 +85,159 @@ export const createTeacher = async (req: Request, res: Response) => {
 
     return res
       .status(201)
-      .json({ message: "o professor foi criado com sucesso.", teacher });
+      .json({ message: 'o professor foi criado com sucesso.', teacher });
   } catch (error) {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Erro ao tentar cadastrar o professor" });
+      .json({ error: 'Erro ao tentar cadastrar o professor' });
   }
 };
 
+// listar todos os professores incluindo os detalhes dele 
 export const listTeachers = async (req: Request, res: Response) => {
   try {
     const role = Role.TEACHER;
-    const schoolId = req.user.schoolId
+    const schoolId = req.user.schoolId;
 
     const teachers = await prisma.user.findMany({
       where: {
         role: role,
-        schoolId: schoolId
+        schoolId: schoolId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        class: {
+          select: {
+            name: true,
+            grade: {
+              select: {
+                name: true
+              },
+            },
+          },
+        },
       },
     });
 
     return res.json({ teachers });
-
   } catch (error) {
     return res.status(500).json({
-        error: "Erro ao tentar carregar a lista de Professores"
-    })
+      error: 'Erro ao tentar carregar a lista de Professores',
+    });
   }
 };
+
+
+//Actualizar dados do professor
+export const updateTeacher = async (req: Request, res: Response) => {
+  try { 
+    const {id} = req.params;
+
+    if(!id || typeof id !== 'string'){
+      return res.status(400).json({error: "ID do professor é obrigatório."})
+    }
+
+    const schoolId = req.user.schoolId;
+    const role = Role.TEACHER;
+
+    if (!schoolId) {
+      return res
+        .status(403)
+        .json({
+          error:
+            'Acesso negado. O seu utilizador não está vinculado a nenhuma escola.',
+        });
+    }
+
+      const {
+      teacherName,
+      teacherEmail,
+      teacherPhone,
+      teacherClass,
+      teacherGrade,
+    } = req.body;
+
+    const teacher = await prisma.user.findUnique({
+      where: {
+        id: id,
+        role: role
+      },
+    });
+
+    if(!teacher){
+      return res.status(404).json({message: "Professor não encontrado"})
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: teacherEmail }, { phone: teacherPhone }],
+        NOT: {id: id}
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message:
+          'Este e-mail ou número de telefone já está em uso por outro utilizador.',
+      });
+    }
+
+    const classFind = await prisma.schoolClass.findFirst({
+      where: { id: teacherClass, gradeId: teacherGrade, schoolId: schoolId },
+    });
+
+    if (!classFind) {
+      return res
+        .status(400)
+        .json({
+          error:
+            'Verifique se a classe e a turma selecionadas são válidas e pertencem a esta escola.',
+        });
+    }
+
+    const isClassOccupied = await prisma.user.findFirst({
+      where: {
+        role: role,
+        classId: teacherClass,
+        NOT: {id: id}
+      },
+      
+    });
+
+    if (isClassOccupied) {
+      return res
+        .status(409)
+        .json({
+          error:
+            'Esta turma já tem um professor regente atribuído. Remova o professor atual antes de atribuir um novo',
+        });
+    };
+
+    const teacherUpdate = await prisma.user.update({
+      where: {
+        id: id,
+        schoolId: schoolId
+      },
+      data: {
+        name: teacherName,
+        email: teacherEmail,
+        phone: teacherPhone, 
+        classId: teacherClass
+      },
+      select: { id: true, name: true, email: true, role: true },
+    });
+
+    return res.json({
+      message: "Dados actulizados com sucesso",
+      teacherUpdate
+    });
+  }catch(error){
+    return res.status(500).json({error: "Error ao tentar actulizar as informções"});
+  }
+}
+
+//To be continued......
