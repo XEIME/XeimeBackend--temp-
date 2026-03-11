@@ -773,10 +773,10 @@ docs: update API documentation
 ```
 ---
 
-## Licença
+## 📄 Licença
 
-Este projeto encontra-se sob a licença MIT.
----
+Este projecto está sob a licença **MIT**. Veja o ficheiro [LICENSE](./LICENSE) para mais detalhes.
 
-Autor: Equipa XEIME
----
+Copyright © 2026 **XEIME Team**
+
+
