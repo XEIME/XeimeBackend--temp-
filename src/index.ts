@@ -1,5 +1,9 @@
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
+
 import "dotenv/config";
 import express from "express";
+
 import authRoutes from './routes/auth.routes.js'
 import schoolRoutes from './routes/school.routes.js'
 import teacherRoutes from './routes/teacher.routes.js'
@@ -23,9 +27,11 @@ app.use("/class", classRoutes)
 
 app.use("/registration", studentAndParentRoutes)
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 
 app.listen(3000, () => {
   console.log("Servidor rodando na porta http://localhost:3000");
+  console.log('Documentação disponível em http://localhost:3000/api-docs');
 });

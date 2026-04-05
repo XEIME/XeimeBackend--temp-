@@ -51,7 +51,7 @@ export const generetClass = async (req: Request, res: Response) => {
       return res.status(409).json({
         error: 'Turma duplicada',
         message:
-          "Já existe uma turma com o nome '${name}' registada nesta classe.",
+          `Já existe uma turma com o nome ${name} registada nesta classe.`,
       });
     }
 
