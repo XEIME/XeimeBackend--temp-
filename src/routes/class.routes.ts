@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { generetClass } from "../controllers/class.controller";
+import { getClasses } from "../controllers/class.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
@@ -49,7 +50,25 @@ const router = Router();
  *        description: Erro interno no servidor.
  * 
  */
-router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), generetClass)
+router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), generetClass);
+
+/**
+ * @openapi
+ * /class:
+ *   get: 
+ *     summary: Listar todas as Turmas da escola e o numero de alunos por turma
+ *     description: Retorna todas as Turmas registadas na instituição do utilizador, com o numero de alunos por turma.
+ *     tags: [Gestão Académica]
+ *     security:
+ *       - bearerAuth: []
+ * 
+ *     responses: 
+ *       200: 
+ *        description: Lista exibida com sucesso.
+ *       500: 
+ *        description: Erro interno no servidor.
+ */
+router.get("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getClasses);
 
 export default router;
 
