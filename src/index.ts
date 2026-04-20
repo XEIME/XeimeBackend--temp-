@@ -11,24 +11,27 @@ import gradeRoutes from './routes/grades.routes.js'
 import classRoutes from './routes/class.routes.js'
 import studentAndParentRoutes from './routes/studentAndParent.routes.js'
 import student from './routes/student.routes.js'
+import parent from './routes/parent.routes.js'
 
 const app = express();
 
 app.use(express.json());
 
-app.use('/auth', authRoutes)
+app.use('/auth', authRoutes);
 
-app.use("/schools", schoolRoutes)
+app.use("/schools", schoolRoutes);
 
-app.use("/teachers", teacherRoutes)
+app.use("/teachers", teacherRoutes);
 
-app.use("/grades", gradeRoutes)
+app.use("/grades", gradeRoutes);
 
-app.use("/class", classRoutes)
+app.use("/class", classRoutes);
 
 app.use("/registration", studentAndParentRoutes);
 
 app.use("/students", student);
+
+app.use("/parents", parent );
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
