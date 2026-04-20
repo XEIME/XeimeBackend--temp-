@@ -94,25 +94,29 @@ export const listTeachers = async (req: Request, res: Response) => {
     const schoolId = req.user.schoolId;
     const role = Role.TEACHER;
 
-   const teacherList = await prisma.user.findMany({
-    where: {
-      schoolId: schoolId,
-      role: role,
-    },
-    select: {
-      name: true, role: true, phone: true
-    }
-   });
+    const teacherList = await prisma.user.findMany({
+      where: {
+        schoolId: schoolId,
+        role: role,
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        phone: true,
+      },
+    });
 
-   return res.json({
-    message: `A escola tem um total de ${teacherList.length} Professores.`,
-    teacherList
-   });
-
-  }catch(error){
-    return res.status(500).json({error: 'Erro ao tentar carregar a lista de Professores'})
+    return res.json({
+      message: `A escola tem um total de ${teacherList.length} Professores.`,
+      teacherList,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'Erro ao tentar carregar a lista de Professores' });
   }
-}
+};
 
 // Ver datalhes de um certo teacher pegando o di dele pelo parametro..
 export const getTeacherDetalhes = async (req: Request, res: Response) => {
@@ -125,7 +129,7 @@ export const getTeacherDetalhes = async (req: Request, res: Response) => {
     const role = Role.TEACHER;
     const schoolId = req.user.schoolId;
 
-    const teachers = await prisma.user.findFirst({
+    const teacher = await prisma.user.findFirst({
       where: {
         id: id,
         role: role,
@@ -136,6 +140,7 @@ export const getTeacherDetalhes = async (req: Request, res: Response) => {
         name: true,
         email: true,
         phone: true,
+        address: true,
         class: {
           select: {
             name: true,
@@ -149,7 +154,11 @@ export const getTeacherDetalhes = async (req: Request, res: Response) => {
       },
     });
 
-    return res.json({ teachers });
+    if (!teacher) {
+      return res.status(404).json({ error: 'Proffesor não encontrado' });
+    }
+
+    return res.json({ teacher });
   } catch (error) {
     return res.status(500).json({
       error: 'Erro ao tentar carregar os detalhes do professor.',
