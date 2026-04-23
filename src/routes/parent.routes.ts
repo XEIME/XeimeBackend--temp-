@@ -4,6 +4,8 @@ import { getParentsDetalhes } from "../controllers/parent.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate";
+import { getParentSchema } from "../schemas/parent.schema";
 
 const router = Router();
 
@@ -45,6 +47,6 @@ router.get("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getParents);
  *       404: 
  *         description: Encarregado não encontrado.
  */
-router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getParentsDetalhes);
+router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(getParentSchema), getParentsDetalhes);
 
 export default router;
