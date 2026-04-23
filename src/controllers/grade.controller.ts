@@ -1,17 +1,14 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { GenerateGradesInput } from "../schemas/grade.schema";
 
 export const generateGrades = async (req: Request, res: Response) => {
     try {
-        const {start, end} = req.body;
+        const {start, end} = req.body as GenerateGradesInput;
         const schoolId = req.user.schoolId;
 
-        if(!start || !end || typeof start !== 'number' || typeof end !== 'number'){
-            return res.status(400).json({error: "Por favor, forneça um intervalo numeríco (start e end)."});
-        }
-
-        if (start > end){
-            return res.status(400).json({error: "O início do intervalo não pode ser maior que o fim."});
+        if(!schoolId){
+            return res.status(403).json({error: "Acesso negado. O seu utilizador não está vinculado a nenhuma escola."})
         }
 
         const gradeNames = [];
@@ -19,10 +16,7 @@ export const generateGrades = async (req: Request, res: Response) => {
             gradeNames.push(`${i}ª Classe`);
         }
 
-        if(!schoolId){
-            return res.status(403).json({error: "Acesso negado. O seu utilizador não está vinculado a nenhuma escola."})
-        }
-
+        //this create all the grades from the start to end 
         await prisma.$transaction(
             gradeNames.map((name) => 
             prisma.schoolGrade.upsert({
@@ -32,7 +26,7 @@ export const generateGrades = async (req: Request, res: Response) => {
                         schoolId: schoolId,
                     },
                 },
-                update: {},
+                update: {}, //If it already exists, it doesn't change anything.
                 create: {
                     name: name,
                     schoolId: schoolId,
@@ -51,6 +45,7 @@ export const generateGrades = async (req: Request, res: Response) => {
     }
 };
 
+//list grades
 export const getGrades = async (req: Request, res: Response) => {
     try {
         const schoolId = req.user.schoolId;

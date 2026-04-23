@@ -1,9 +1,17 @@
+import { Router } from "express";
+import { login } from "../controllers/auth.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validate";
+import { loginSchema } from "../schemas/auth.schema";
+
+const router = Router();
+
 /**
  * @openapi
  * /auth/login:
  *   post:
  *     summary: Autenticar um utilizador
- *     description: Permite entrar no sistema usando Email ou Telefone. Retorna um Token JWT.
+ *     description: Permite entrar no sistema usando Email, Telefone ou Username (Alunos). Retorna um Token JWT.
  *     tags: [Autenticação]
  * 
  *     requestBody:
@@ -32,15 +40,7 @@
  *       500: 
  *        description: Erro interno no servidor.
  */
-
-import { Router } from "express";
-import { login } from "../controllers/auth.controller";
-import { authMiddleware } from "../middlewares/auth.middleware";
-
-
-const router = Router();
-
-router.post('/login', login)
+router.post('/login', validate(loginSchema), login)
 
 // router.get('/me', authMiddleware, (req, res) => {
 //     return res.json({message: "Tu estás autenticado",

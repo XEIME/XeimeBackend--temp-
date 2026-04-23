@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import bcrypt from 'bcryptjs';
 import { Role } from '../../generated/prisma/enums';
+import { CreateTeacherInput, UpdateTeacherInput } from '../schemas/teacher.schema';
 
+//create teacher and pleace him/her in a grade and class
 export const createTeacher = async (req: Request, res: Response) => {
   try {
     const {
@@ -12,7 +14,7 @@ export const createTeacher = async (req: Request, res: Response) => {
       teacherPassword,
       teacherClass,
       teacherGrade,
-    } = req.body;
+    } = req.body as CreateTeacherInput;
 
     const schoolId = req.user.schoolId;
     const role = Role.TEACHER;
@@ -37,6 +39,7 @@ export const createTeacher = async (req: Request, res: Response) => {
       });
     }
 
+    //Check Class existence and School ownership
     const classFind = await prisma.schoolClass.findFirst({
       where: { id: teacherClass, gradeId: teacherGrade, schoolId: schoolId },
     });
@@ -48,6 +51,7 @@ export const createTeacher = async (req: Request, res: Response) => {
       });
     }
 
+    //Ensure the class is not already occupied
     const isClassOccupied = await prisma.user.findFirst({
       where: {
         role: role,
@@ -79,16 +83,19 @@ export const createTeacher = async (req: Request, res: Response) => {
 
     return res
       .status(201)
-      .json({ message: 'o professor foi criado com sucesso.', teacher });
-  } catch (error) {
-    console.error(error);
+      .json({ message: 'O professor foi criado com sucesso.', teacher });
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+        return res.status(400).json({ error: "O Email ou numero de telefone já em uso" });
+    }
+    // console.error(error);
     return res
       .status(500)
       .json({ error: 'Erro ao tentar cadastrar o professor' });
   }
 };
 
-//listar todos os teachers da escola..
+//list all teachers of the schools
 export const listTeachers = async (req: Request, res: Response) => {
   try {
     const schoolId = req.user.schoolId;
@@ -118,7 +125,7 @@ export const listTeachers = async (req: Request, res: Response) => {
   }
 };
 
-// Ver datalhes de um certo teacher pegando o di dele pelo parametro..
+// get teacher detalhes by params
 export const getTeacherDetalhes = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -166,7 +173,7 @@ export const getTeacherDetalhes = async (req: Request, res: Response) => {
   }
 };
 
-//Actualizar dados do professor
+//Update teacher data
 export const updateTeacher = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -191,7 +198,7 @@ export const updateTeacher = async (req: Request, res: Response) => {
       teacherPhone,
       teacherClass,
       teacherGrade,
-    } = req.body;
+    } = req.body as UpdateTeacherInput;
 
     const teacher = await prisma.user.findUnique({
       where: {
@@ -204,57 +211,32 @@ export const updateTeacher = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Professor não encontrado' });
     }
 
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: teacherEmail }, { phone: teacherPhone }],
-        NOT: { id: id },
-      },
-    });
+    // Build update object dynamically to avoid 'undefined' keys
+    const updateData: any = {};
+    if (teacherName) updateData.name = teacherName;
+    if (teacherEmail) updateData.email = teacherEmail;
+    if (teacherPhone) updateData.phone = teacherPhone;
+    if (teacherClass) updateData.classId = teacherClass;
 
-    if (existingUser) {
-      return res.status(400).json({
-        message:
-          'Este e-mail ou número de telefone já está em uso por outro utilizador.',
-      });
-    }
+    // If changing class, must re-verify availability
+    if (teacherClass && teacherGrade) {
+        const classFind = await prisma.schoolClass.findFirst({
+            where: { id: teacherClass, gradeId: teacherGrade, schoolId },
+        });
+        if (!classFind) return res.status(400).json({ error: 'Verifique se a classe e a turma selecionadas são válidas e pertencem a esta escola.' });
 
-    const classFind = await prisma.schoolClass.findFirst({
-      where: { id: teacherClass, gradeId: teacherGrade, schoolId: schoolId },
-    });
-
-    if (!classFind) {
-      return res.status(400).json({
-        error:
-          'Verifique se a classe e a turma selecionadas são válidas e pertencem a esta escola.',
-      });
-    }
-
-    const isClassOccupied = await prisma.user.findFirst({
-      where: {
-        role: role,
-        classId: teacherClass,
-        NOT: { id: id },
-      },
-    });
-
-    if (isClassOccupied) {
-      return res.status(409).json({
-        error:
-          'Esta turma já tem um professor regente atribuído. Remova o professor atual antes de atribuir um novo',
-      });
+        const isClassOccupied = await prisma.user.findFirst({
+            where: { role: Role.TEACHER, classId: teacherClass, NOT: { id } },
+        });
+        if (isClassOccupied) return res.status(409).json({ error: 'Esta turma já tem um professor regente atribuído. Remova o professor atual antes de atribuir um novo' });
     }
 
     const teacherUpdate = await prisma.user.update({
       where: {
         id: id,
-        schoolId: schoolId,
+        schoolId: schoolId, //Ensures only admins of the SAME school can update
       },
-      data: {
-        name: teacherName,
-        email: teacherEmail,
-        phone: teacherPhone,
-        classId: teacherClass,
-      },
+      data: updateData,
       select: { id: true, name: true, email: true, role: true },
     });
 
@@ -262,7 +244,8 @@ export const updateTeacher = async (req: Request, res: Response) => {
       message: 'Dados actulizados com sucesso',
       teacherUpdate,
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 'P2002') return res.status(400).json({ error: "Este e-mail ou número de telefone já está em uso por outro utilizador." });
     return res
       .status(500)
       .json({ error: 'Error ao tentar actulizar as informções' });

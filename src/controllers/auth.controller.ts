@@ -2,9 +2,12 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcryptjs"; 
 import jwt from "jsonwebtoken";
+import { LoginInput } from "../schemas/auth.schema.js";
 
 export const login = async (req: Request, res: Response) => {
-    const {login, password} = req.body;
+
+    //using the type of the schema (auth.schema.ts)
+    const {login, password} = req.body as LoginInput;
     
     try {
        const user = await prisma.user.findFirst({

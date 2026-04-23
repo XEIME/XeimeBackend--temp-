@@ -6,6 +6,8 @@ import { schoolupdate } from "../controllers/school.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate";
+import { createSchoolSchema, updateSchoolSchema, getSchoolSchema } from "../schemas/school.schema";
 
 
 
@@ -53,7 +55,7 @@ const router = Router();
  *       500: 
  *        description: Erro ao criar escolas ou o nome já existe.
  */
-router.post("/", authMiddleware, checkRole([Role.SUPER_ADMIN]),  createSchoolWithAdmin);
+router.post("/", authMiddleware, checkRole([Role.SUPER_ADMIN]), validate(createSchoolSchema), createSchoolWithAdmin);
 
 /**
  * @openapi
@@ -94,7 +96,7 @@ router.get("/", authMiddleware, checkRole([Role.SUPER_ADMIN]), listSchools);
  *       404: 
  *         description: Escola não encontrada.
  */
-router.get("/:id", authMiddleware, checkRole([Role.SUPER_ADMIN]),  getSchoolsDetalhes);
+router.get("/:id", authMiddleware, checkRole([Role.SUPER_ADMIN]), validate(getSchoolSchema),  getSchoolsDetalhes);
 
 /**
  * @openapi
@@ -130,6 +132,6 @@ router.get("/:id", authMiddleware, checkRole([Role.SUPER_ADMIN]),  getSchoolsDet
  *       200: 
  *        description: Dados atulizados com sucesso
  */
-router.patch("/:id", authMiddleware, checkRole([Role.SUPER_ADMIN]), schoolupdate);
+router.patch("/:id", authMiddleware, checkRole([Role.SUPER_ADMIN]), validate(updateSchoolSchema), schoolupdate);
 
 export default router;

@@ -4,6 +4,8 @@ import { getStudentsDetalhes } from "../controllers/student.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate"; 
+import { getStudentSchema } from "../schemas/student.schema";
 
 const router = Router();
 
@@ -45,7 +47,7 @@ router.get("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getStudents);
  *       404: 
  *         description: Aluno não encontrado.
  */
-router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getStudentsDetalhes);
+router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(getStudentSchema), getStudentsDetalhes);
 
 export default router;
 

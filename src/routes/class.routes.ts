@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { generetClass } from "../controllers/class.controller";
 import { getClasses } from "../controllers/class.controller";
+import { updateClass } from "../controllers/class.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate";
+import { createClassSchema, updateClassSchema } from "../schemas/class.schema";
 
 const router = Router();
 
@@ -50,7 +53,7 @@ const router = Router();
  *        description: Erro interno no servidor.
  * 
  */
-router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), generetClass);
+router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(createClassSchema), generetClass);
 
 /**
  * @openapi
@@ -69,6 +72,37 @@ router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), generetClass);
  *        description: Erro interno no servidor.
  */
 router.get("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getClasses);
+
+
+ /**
+ * @openapi
+ * /class/{id}:
+ *   patch: 
+ *     summary: Atualizar dados de uma turma
+ *     tags: [Gestão Académica]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: 
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: 
+ *             type: object 
+ *             properties:
+ *               name: 
+ *                 type: string 
+ *                 example: "Turma B"
+ *               gradeId: 
+ *                 type: string 
+ *                 format: uuid
+ */
+router.patch("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(updateClassSchema), updateClass);
 
 export default router;
 

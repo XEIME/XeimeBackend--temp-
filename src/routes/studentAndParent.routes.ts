@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { creatStudentAndParent } from "../controllers/studentAndParent.controller";
+import { creatStudentAndParent, updateStudentAndParent } from "../controllers/studentAndParent.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate";
+import { createStudentAndParentSchema, updateStudentAndParentSchema } from "../schemas/studentAndParent.schema";
 
 const router = Router();
 
@@ -62,7 +64,57 @@ const router = Router();
  *       500: 
  *        description: Erro ao processar cadastro. 
  */
-router.post("/students", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), creatStudentAndParent);
+router.post("/students", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(createStudentAndParentSchema), creatStudentAndParent);
+
+
+/**
+ * @openapi
+ * /registration/students/{id}:
+ *   patch: 
+ *     summary: Atualizar dados do aluno junto com o seu encarregado
+ *     tags: [Matrículas]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: 
+ *             type: object 
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: 
+ *           type: string
+ *           format: uuid
+ *         properties: 
+ *               studentName: 
+ *                 type: string
+ *                 example: "Clayton Muangula Jr."
+ *               studentUsername: 
+ *                 type: string
+ *                 example: "clayton.new2026"
+ *               studentClass: 
+ *                 type: string
+ *                 format: uuid
+ *                 description: Novo ID da turma se houver transferência.
+ *               parentName: 
+ *                 type: string 
+ *                 example: "Marcos Higildo Alterado"
+ *               parentEmail: 
+ *                 type: string
+ *                 example: "novo.email@parent.com"
+ *               parentPhone: 
+ *                 type: string
+ *                 example: "841234567"
+ *     responses: 
+ *       200: 
+ *        description: Dados do aluno actulaizados.
+ *       404:
+ *        description: Estudante não encontrado nesta instituição.
+ */
+router.patch("/students/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(updateStudentAndParentSchema), updateStudentAndParent);
 
 export default router;
 

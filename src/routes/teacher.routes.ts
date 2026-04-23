@@ -6,6 +6,9 @@ import { updateTeacher } from "../controllers/teacher.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate";
+import {createTeacherSchema, updateTeacherSchema} from "../schemas/teacher.schema"
+import { getTeacherSchema } from "../schemas/teacher.schema";
 
 
 const router = Router();
@@ -60,7 +63,7 @@ const router = Router();
  *       500: 
  *        description: Erro ao processar cadastro. 
  */
-router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), createTeacher);
+router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(createTeacherSchema), createTeacher);
 
 /**
  * @openapi
@@ -99,7 +102,7 @@ router.get("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), listTeachers);
  *       404: 
  *         description: Professor não encontrado.
  */
-router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getTeacherDetalhes);
+router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(getTeacherSchema), getTeacherDetalhes);
 
 /**
  * @openapi
@@ -114,22 +117,30 @@ router.get("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getTeacherDet
  *         name: id
  *         required: true
  *         schema: 
- *           type: object
- *         properties: 
- *               teacherName: 
- *                 type: string
- *               teacherEmail: 
- *                 type: string
- *               teacherPhone: 
- *                 type: string
- *               teacherClass: 
- *                 type: string
- *               teacherGrade: 
- *                 type: string
+ *           type: string
+ *           format: uuid
+ *           description: ID único do professor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: 
+ *             type: object 
+ *           properties: 
+ *             teacherName: 
+ *               type: string
+ *             teacherEmail: 
+ *               type: string
+ *             teacherPhone: 
+ *               type: string
+ *             teacherClass: 
+ *               type: string
+ *             teacherGrade: 
+ *               type: string
  *     responses: 
  *       200: 
- *        description: Detalhes do professor e sua turma.
+ *        description: Dados do professor actulizados.
  */
-router.patch("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), updateTeacher)
+router.patch("/:id", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(updateTeacherSchema), updateTeacher)
 
 export default router;
