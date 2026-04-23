@@ -4,6 +4,8 @@ import { generateGrades } from "../controllers/grade.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { Role } from "../../generated/prisma/enums";
+import { validate } from "../middlewares/validate";
+import { generateGradesSchema } from "../schemas/grade.schema";
 
 const router = Router();
 
@@ -43,7 +45,7 @@ const router = Router();
  *       500: 
  *        description: Erro interno no servidor.
  */
-router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), generateGrades);
+router.post("/", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), validate(generateGradesSchema), generateGrades);
 
 /**
  * @openapi
