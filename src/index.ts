@@ -4,6 +4,8 @@ import { swaggerSpec } from './config/swagger.js';
 import "dotenv/config";
 import express from "express";
 
+import cors from "cors";
+
 import authRoutes from './routes/auth.routes.js'
 import schoolRoutes from './routes/school.routes.js'
 import teacherRoutes from './routes/teacher.routes.js'
@@ -14,6 +16,13 @@ import student from './routes/student.routes.js'
 import parent from './routes/parent.routes.js'
 
 const app = express();
+
+//using global cors before my rotes
+app.use(cors ({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 
@@ -37,7 +46,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 
-app.listen(3000, () => {
-  console.log("Servidor rodando na porta http://localhost:3000");
-  console.log('Documentação disponível em http://localhost:3000/api-docs');
+app.listen(5000, () => {
+  console.log("Servidor rodando na porta http://localhost:5000");
+  console.log('Documentação disponível em http://localhost:5000/api-docs');
 });
