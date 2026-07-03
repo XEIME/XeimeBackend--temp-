@@ -2,17 +2,16 @@ import { Router } from "express";
 import { Role } from "../../generated/prisma/enums";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
-import { countSchoolAdmins } from "../controllers/admin.controller";
-
+import { getSuperAdminDashboard } from "../controllers/dashboard.controller";
 
 const router = Router();
 
 /**
  * @openapi
- * /admins/count:
+ * /dashboard/super_admin:
  *   get: 
- *     summary: Mostrar o numero de adminstradores
- *     description: Retorna o numero total de todos adminstradores.
+ *     summary: Mostrar o numero total de utilizadores pra cada tipo de role
+ *     description: Retorna o numero total de cada tipo de utilizador.
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []
@@ -21,9 +20,9 @@ const router = Router();
  *       200: 
  *        description: numero exibido com com sucesso.
  *       500: 
- *        description: Erro interno no servidor.
+ *        description: Erro ao carregar os dados do dashboard.
  */
 
-router.get("/count", authMiddleware, checkRole([Role.SUPER_ADMIN]), countSchoolAdmins);
+router.get("/super_admin", authMiddleware, checkRole([Role.SUPER_ADMIN]), getSuperAdminDashboard);
 
 export default router;
