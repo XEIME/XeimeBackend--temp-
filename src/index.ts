@@ -14,7 +14,8 @@ import classRoutes from './routes/class.routes.js'
 import studentAndParentRoutes from './routes/studentAndParent.routes.js'
 import student from './routes/student.routes.js'
 import parent from './routes/parent.routes.js'
-import admins from './routes/admin.routes.js'
+import dashboardRoutes from './routes/dashboard.routes.js'
+
 const app = express();
 
 //using global cors before my rotes
@@ -42,7 +43,7 @@ app.use("/students", student);
 
 app.use("/parents", parent );
 
-app.use("/admins", admins);
+app.use("/dashboard", dashboardRoutes);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
