@@ -56,7 +56,18 @@ export const listSchools = async (req: Request, res: Response) => {
     try {
         
 
-        const schoolList = await prisma.school.findMany({});
+        const schoolList = await prisma.school.findMany({
+            include: {
+                users: {
+                    where: {
+                        role: 'SCHOOL_ADMIN'
+                    },
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
         
         // if(schoolList.length === 0){
         //     return res.json("Nenhuma escola encontrada no sistema.")
