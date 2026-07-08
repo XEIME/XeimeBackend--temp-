@@ -3,6 +3,7 @@ import { Role } from "../../generated/prisma/enums";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { checkRole } from "../middlewares/role.middleware";
 import { getSuperAdminDashboard } from "../controllers/dashboard.controller";
+import { getSchoolAdminDashboard } from "../controllers/dashboard.controller";
 
 const router = Router();
 
@@ -24,5 +25,24 @@ const router = Router();
  */
 
 router.get("/super_admin", authMiddleware, checkRole([Role.SUPER_ADMIN]), getSuperAdminDashboard);
+
+/**
+ * @openapi
+ * /dashboard/school_admin:
+ *   get: 
+ *     summary: dachbord do school admin
+ *     description: info do school admin
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ * 
+ *     responses: 
+ *       200: 
+ *        description: numero exibido com com sucesso.
+ *       500: 
+ *        description: Erro ao carregar os dados do dashboard.
+ */
+router.get("/school_admin", authMiddleware, checkRole([Role.SCHOOL_ADMIN]), getSchoolAdminDashboard);
+
 
 export default router;

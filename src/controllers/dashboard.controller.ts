@@ -39,3 +39,79 @@ export const getSuperAdminDashboard = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getSchoolAdminDashboard = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const schoolId = req.user?.schoolId;
+
+    if (!schoolId) {
+      return res.status(400).json({
+        error: "Administrador sem escola associada.",
+      });
+    }
+
+    const [
+      school,
+      totalStudents,
+      totalTeachers,
+      totalClasses,
+      totalGrades,
+    ] = await Promise.all([
+      prisma.school.findUnique({
+        where: {
+          id: schoolId,
+        },
+        select: {
+          name: true,
+          address: true,
+        },
+      }),
+
+      prisma.user.count({
+        where: {
+          schoolId,
+          role: 'STUDENT',
+        },
+      }),
+
+      prisma.user.count({
+        where: {
+          schoolId,
+          role: 'TEACHER',
+        },
+      }),
+
+      prisma.schoolClass.count({
+        where: {
+          schoolId,
+        },
+      }),
+
+      prisma.schoolGrade.count({
+        where: {
+          schoolId,
+        },
+      }),
+    ]);
+
+    return res.json({
+      school,
+
+      statistics: {
+        totalStudents,
+        totalTeachers,
+        totalClasses,
+        totalGrades,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      error: "Erro ao carregar o dashboard.",
+    });
+  }
+};
