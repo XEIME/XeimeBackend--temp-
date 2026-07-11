@@ -1,7 +1,7 @@
 import { url } from "node:inspector";
 import { Options } from "swagger-jsdoc";
 import swaggerJSDoc from "swagger-jsdoc";
-import packageJson from '../../package.json' assert {type: 'json'};
+import packageJson from '../../package.json' with {type: 'json'};
 
 const options: Options = {
     definition: {

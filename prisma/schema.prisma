@@ -24,13 +24,13 @@ enum MarkType {
 
 enum AttendenceStatus {
   PRESENTE
-  FALTA 
-  ATRASO 
+  FALTA
+  ATRASO
 }
 
 model School {
-  id String @id @default(uuid())
-  name String @unique
+  id      String @id @default(uuid())
+  name    String @unique
   address String
 
   users User[]
@@ -41,30 +41,32 @@ model School {
 }
 
 model User {
-  id String @id @default(uuid())
-  name String
-  email String? 
-  phone String? 
-  password String
-  avatarUrl String? 
+  id        String  @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  password  String
+  avatarUrl String?
 
   role Role @default(STUDENT)
 
-  bio String?
-  address String?
+  bio      String?
+  address  String?
   birthday DateTime?
 
   settings Settings?
 
   schoolId String?
-  school School? @relation(fields: [schoolId], references: [id])
+  school   School? @relation(fields: [schoolId], references: [id])
 
   parentId String? @map("parent_id")
-  parent User? @relation("familyLink", fields: [parentId], references: [id])
-  children User[] @relation("familyLink")
+  parent   User?   @relation("familyLink", fields: [parentId], references: [id])
+  children User[]  @relation("familyLink")
 
   classId String?
-  class SchoolClass? @relation(fields: [classId], references: [id])
+  class   SchoolClass? @relation(fields: [classId], references: [id])
+
+  completedTopics ClassProgress[] @relation("TeacherCompletedTopics")
 
   mark Mark[] @relation("studentMarks")
 
@@ -75,24 +77,24 @@ model User {
 }
 
 model Settings {
-  id String @id @default(uuid())
+  id            String  @id @default(uuid())
   notifications Boolean @default(true)
-  darkMode Boolean @default(false)
-  language String @default("pt-MZ")
+  darkMode      Boolean @default(false)
+  language      String  @default("pt-MZ")
 
   userId String @unique
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model SchoolClass {
-  id String @id @default(uuid())
+  id   String @id @default(uuid())
   name String
 
   schoolId String
-  school School @relation(fields: [schoolId], references: [id])
+  school   School @relation(fields: [schoolId], references: [id])
 
   gradeId String
-  grade SchoolGrade @relation(fields: [gradeId], references: [id])
+  grade   SchoolGrade @relation(fields: [gradeId], references: [id])
 
   user User[]
 
@@ -101,15 +103,14 @@ model SchoolClass {
   homeWorks HomeWork[]
 
   attendance Attendance[]
-
 }
 
 model SchoolGrade {
-  id String @id @default(uuid())
-  name String 
+  id   String @id @default(uuid())
+  name String
 
   schoolId String
-  school School @relation(fields: [schoolId], references: [id])
+  school   School @relation(fields: [schoolId], references: [id])
 
   schoolclasses SchoolClass[]
 
@@ -119,7 +120,7 @@ model SchoolGrade {
 }
 
 model Subject {
-  id  String @id @default(uuid())
+  id   String @id @default(uuid())
   name String @unique
 
   academicplan AcademicPlan[]
@@ -132,14 +133,14 @@ model Subject {
 }
 
 model AcademicPlan {
-  id String @id @default(uuid())
+  id        String @id @default(uuid())
   trimester Int
-  year Int
+  year      Int
 
   subjectId String
-  subject Subject @relation(fields: [subjectId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
 
-  gradeId String
+  gradeId     String
   schoolGrade SchoolGrade @relation(fields: [gradeId], references: [id])
 
   topic Topic[]
@@ -148,14 +149,14 @@ model AcademicPlan {
 }
 
 model Topic {
-  id String @id @default(uuid())
-  weekNumber Int
-  unit String
-  content String[]
-  objectives String[]
-  numberOfLessons Int @default(1)
+  id              String   @id @default(uuid())
+  weekNumber      Int
+  unit            String
+  content         String[]
+  objectives      String[]
+  numberOfLessons Int      @default(1)
 
-  planId String
+  planId       String
   academicPlan AcademicPlan @relation(fields: [planId], references: [id])
 
   classProgress ClassProgress[]
@@ -164,11 +165,14 @@ model Topic {
 model ClassProgress {
   id String @id @default(uuid())
 
-  classId String
+  classId     String
   schoolClass SchoolClass @relation(fields: [classId], references: [id])
 
   topicId String
-  topic Topic @relation(fields: [topicId], references: [id])
+  topic   Topic  @relation(fields: [topicId], references: [id])
+
+  completedById String
+  completedBy   User   @relation("TeacherCompletedTopics", fields: [completedById], references: [id])
 
   completedAt DateTime @default(now())
 
@@ -176,17 +180,17 @@ model ClassProgress {
 }
 
 model Mark {
-  id String @id @default(uuid())
-  type MarkType
-  value Float
+  id        String   @id @default(uuid())
+  type      MarkType
+  value     Float
   trimester Int
-  year Int
+  year      Int
 
   studentId String
-  student User @relation("studentMarks", fields: [studentId], references: [id])
+  student   User   @relation("studentMarks", fields: [studentId], references: [id])
 
   subjectId String
-  subject Subject @relation(fields: [subjectId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -195,36 +199,36 @@ model Mark {
 }
 
 model HomeWork {
-  id String @id @default(uuid())
-  title String
+  id          String   @id @default(uuid())
+  title       String
   description String
-  dueData DateTime
+  dueData     DateTime
 
   subjectId String
-  suject Subject @relation(fields: [subjectId], references: [id])
+  suject    Subject @relation(fields: [subjectId], references: [id])
 
   classId String
-  class SchoolClass @relation(fields: [classId], references: [id])
+  class   SchoolClass @relation(fields: [classId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Attendance {
-  id String @id @default(uuid())
-  date DateTime @default(now())
+  id     String           @id @default(uuid())
+  date   DateTime         @default(now())
   status AttendenceStatus
-  note String?
+  note   String?
 
   isPublished Boolean @default(false)
 
   studentId String
-  student User @relation("StudentAttendance", fields: [studentId], references: [id])
+  student   User   @relation("StudentAttendance", fields: [studentId], references: [id])
 
   classid String
-  class SchoolClass @relation(fields: [classid], references: [id])
+  class   SchoolClass @relation(fields: [classid], references: [id])
 
   subjectId String
-  subject Subject @relation(fields: [subjectId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
 
   @@unique([studentId, subjectId, date])
 }

@@ -15,6 +15,12 @@ import studentAndParentRoutes from './routes/studentAndParent.routes.js'
 import student from './routes/student.routes.js'
 import parent from './routes/parent.routes.js'
 import dashboardRoutes from './routes/dashboard.routes.js'
+import teacherClassProgressRoute from './routes/teacherClassProgress.routes.js'
+import academicPlanRouter from './routes/academicPlan.routes.js';
+import teacherAttendanceRouter from './routes/teacherAttendance.routes';
+import teacherHomeworkRouter from './routes/teacherHomework.routes';
+import teacherMarkRouter from './routes/teacherMark.routes';
+import teacherStudentsRouter from './routes/teacherStudents.routes';
 
 const app = express();
 
@@ -44,6 +50,19 @@ app.use("/students", student);
 app.use("/parents", parent );
 
 app.use("/dashboard", dashboardRoutes);
+
+app.use(teacherClassProgressRoute);
+
+app.use(academicPlanRouter);
+
+app.use(teacherAttendanceRouter);
+
+app.use(teacherHomeworkRouter);
+
+app.use(teacherMarkRouter);
+
+app.use(teacherStudentsRouter);
+
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
