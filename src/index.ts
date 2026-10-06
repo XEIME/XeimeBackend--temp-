@@ -22,6 +22,8 @@ import teacherHomeworkRouter from './routes/teacherHomework.routes';
 import teacherMarkRouter from './routes/teacherMark.routes';
 import teacherStudentsRouter from './routes/teacherStudents.routes';
 import subjectRouter from "./routes/subject.routes";
+import parentPortalRouter from "./routes/parentPortal.routes";
+import studentPortal from "./routes/studentPortal.routes.js"
 
 const app = express();
 
@@ -65,6 +67,11 @@ app.use(teacherMarkRouter);
 app.use(teacherStudentsRouter);
 
 app.use(subjectRouter);
+
+app.use(parentPortalRouter);
+
+app.use(studentPortal);
+
 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
